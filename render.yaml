@@ -2,13 +2,9 @@ services:
   # 1. MySQL Database (Run as Private Service in Render)
   - type: pserv
     name: ewaste-db
-    env: docker
+    env: image
+    image: mysql:8.0
     plan: free
-    dockerImage: mysql:8.0
-    disk:
-      name: ewaste-db-data
-      mountPath: /var/lib/mysql
-      sizeGB: 1
     envVars:
       - key: MYSQL_DATABASE
         value: ewaste_db
@@ -49,7 +45,7 @@ services:
     env: static
     rootDir: e-waste-system-main
     buildCommand: npm install && npm run build
-    publishDir: dist
+    publishPath: dist
     plan: free
     envVars:
       - key: VITE_API_URL
