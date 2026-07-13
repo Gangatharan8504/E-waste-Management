@@ -4,7 +4,7 @@ const EwasteRequest = require('../models/EwasteRequest');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { protect, adminOnly } = require('../middleware/auth');
-const { sendPickupScheduled, sendBetterImagesRequired } = require('../services/emailService');
+const { sendPickupScheduled, sendBetterImagesRequired, sendTrackingStatusUpdate } = require('../services/emailService');
 
 /**
  * GET /requests
@@ -50,17 +50,21 @@ router.put('/requests/:id/status', protect, adminOnly, async (req, res) => {
     if (status === 'BETTER_IMAGES_REQUIRED') {
       title = 'Better Images Required';
       message = `Please upload better images of the device for request #${request._id}.`;
-      // Send notification alert email
       sendBetterImagesRequired(request.user.email, request.deviceType || 'Electronic Device');
     } else if (status === 'ACCEPTED') {
       title = 'Pickup Request Approved';
       message = `Your e-waste collection request #${request._id} has been approved by the admin.`;
+      sendTrackingStatusUpdate(request.user.email, request.deviceType || 'Electronic Device', request._id, 'APPROVED');
     } else if (status === 'COMPLETED') {
       title = 'Recycling Completed';
       message = `The recycling process for your device under request #${request._id} is now complete. Thank you!`;
+      sendTrackingStatusUpdate(request.user.email, request.deviceType || 'Electronic Device', request._id, 'COMPLETED');
     } else if (status === 'COLLECTED') {
       title = 'Item Collected';
       message = `Our agent has successfully collected your electronic device for request #${request._id}.`;
+      sendTrackingStatusUpdate(request.user.email, request.deviceType || 'Electronic Device', request._id, 'COLLECTED');
+    } else {
+      sendTrackingStatusUpdate(request.user.email, request.deviceType || 'Electronic Device', request._id, status);
     }
 
     const notification = new Notification({

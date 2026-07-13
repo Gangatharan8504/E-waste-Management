@@ -126,4 +126,38 @@ const sendBetterImagesRequired = async (email, deviceType) => {
   }
 };
 
-module.exports = { sendOtp, sendWelcomeEmail, sendPickupScheduled, sendBetterImagesRequired };
+const sendTrackingStatusUpdate = async (email, deviceType, requestId, status) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `"EcoCollect Support" <${process.env.MAIL_USERNAME || 'gangatharan949@gmail.com'}>`,
+      to: email,
+      subject: `EcoCollect Tracking Update: Request #${requestId} is now ${status}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px; max-width: 600px; margin: auto;">
+          <h2 style="color: #2b7a78; text-align: center;">E-Waste Tracking Update</h2>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+          <p>Hello,</p>
+          <p>The collection and recycling status for your electronic device under request <strong>#${requestId}</strong> has been updated.</p>
+          
+          <div style="background-color: #f7f9fa; padding: 15px; border-left: 5px solid #2b7a78; margin: 20px 0;">
+            <p style="margin: 5px 0; font-size: 14px;"><strong>Device Type:</strong> ${deviceType}</p>
+            <p style="margin: 10px 0; font-size: 18px; color: #2b7a78; font-weight: bold; text-transform: uppercase;">
+              Status: ${status}
+            </p>
+          </div>
+          
+          <p>You can track real-time logistics logs and carbon offset statistics directly on your user dashboard.</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+          <p style="font-size: 12px; color: #888; text-align: center;">Thank you for contributing to a sustainable future!</p>
+        </div>
+      `
+    };
+    await transporter.sendMail(mailOptions);
+    console.log(`Tracking status update email sent to ${email} for status ${status}`);
+  } catch (error) {
+    console.error('Error sending Tracking Update Email:', error.message);
+  }
+};
+
+module.exports = { sendOtp, sendWelcomeEmail, sendPickupScheduled, sendBetterImagesRequired, sendTrackingStatusUpdate };
