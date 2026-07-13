@@ -1,0 +1,29 @@
+# IDEs and Editors
+.idea/
+.vscode/
+*.iml
+
+# Build outputs
+target/
+dist/
+build/
+out/
+bin/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+application-local.properties
+
+# Logs and temp files
+*.log
+.system_generated/
+scratch/
+tmp/
+
+# OS files
+.DS_Store
+desktop.ini
