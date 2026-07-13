@@ -1,25 +1,15 @@
-databases:
-  - name: ewaste-db
-    databaseName: ewaste_db
-    user: ewaste_user
-    plan: free
-
 services:
-  # 1. Spring Boot Backend Web Service
+  # 1. Node.js Express Backend Web Service
   - type: web
     name: ewaste-backend
-    env: docker
-    dockerfilePath: backend/Dockerfile
+    env: node
     plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: ewaste-db
-          property: connectionString
-      - key: SPRING_DATASOURCE_DRIVER
-        value: org.postgresql.Driver
-      - key: SPRING_JPA_DIALECT
-        value: org.hibernate.dialect.PostgreSQLDialect
+      - key: MONGODB_URI
+        value: ""
       - key: JWT_SECRET
         generateValue: true
       - key: MAIL_USERNAME
