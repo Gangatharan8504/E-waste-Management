@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String },
   address: { type: String },
   pincode: { type: String },
+  profilePic: { type: String },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
   enabled: { type: Boolean, default: false },
   emailVerified: { type: Boolean, default: false },

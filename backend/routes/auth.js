@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -220,6 +221,53 @@ router.put('/profile', protect, async (req, res) => {
     return res.status(200).json(user);
   } catch (error) {
     console.error('Profile Update Error:', error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+const multer = require('multer');
+const fs = require('fs');
+const { uploadImage } = require('../services/cloudinaryService');
+
+const uploadsFolder = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsFolder)) {
+  fs.mkdirSync(uploadsFolder, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsFolder);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const uniqueName = `${Date.now()}-${Math.floor(Math.random() * 10000)}${ext}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({ storage });
+
+/**
+ * POST /profile-pic
+ * Uploads user profile image
+ */
+router.post('/profile-pic', protect, upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+
+  try {
+    const storageUrl = await uploadImage(req.file);
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.profilePic = storageUrl;
+    await user.save();
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error('Profile Picture Upload Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
