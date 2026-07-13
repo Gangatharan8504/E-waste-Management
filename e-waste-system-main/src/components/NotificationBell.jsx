@@ -1,19 +1,45 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Trash2, Check, CheckCheck } from "lucide-react";
+import { Bell, Trash2, Check, CheckCheck, X } from "lucide-react";
 import api from "../services/api";
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [activeToast, setActiveToast] = useState(null);
+  
   const dropdownRef = useRef(null);
+  const lastNotifIdsRef = useRef(new Set());
   const navigate = useNavigate();
 
   const fetchNotifications = async () => {
     try {
       const res = await api.get("/notifications");
-      setNotifications(res.data);
+      const data = res.data;
+      setNotifications(data);
+
+      // Detect any new unread notifications that were not present before
+      if (lastNotifIdsRef.current.size > 0) {
+        const newUnread = data.filter(n => !n.isRead && !lastNotifIdsRef.current.has(n.id));
+        if (newUnread.length > 0) {
+          const latest = newUnread[0];
+          setActiveToast({
+            title: latest.title,
+            description: latest.description,
+            id: latest.id
+          });
+          // Auto dismiss after 4 seconds
+          setTimeout(() => {
+            setActiveToast(null);
+          }, 4000);
+        }
+      }
+
+      // Sync notification IDs history
+      const currentIds = new Set(data.map(n => n.id));
+      lastNotifIdsRef.current = currentIds;
+
       const countRes = await api.get("/notifications/unread-count");
       setUnreadCount(countRes.data);
     } catch (err) {
@@ -186,6 +212,25 @@ function NotificationBell() {
               View All Notifications
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification Pop-up */}
+      {activeToast && (
+        <div className="fixed top-4 right-4 z-[9999] max-w-sm w-full bg-white border border-gray-100 shadow-2xl rounded-3xl p-5 flex gap-3.5 animate-slide-in items-start transition transform duration-300">
+          <div className="p-2.5 bg-emerald-100 text-emerald-700 rounded-full flex-shrink-0 animate-bounce">
+            <Bell size={18} />
+          </div>
+          <div className="flex-1 space-y-1">
+            <h4 className="font-bold text-gray-800 text-sm">{activeToast.title}</h4>
+            <p className="text-[11px] text-gray-500 leading-relaxed">{activeToast.description}</p>
+          </div>
+          <button 
+            onClick={() => setActiveToast(null)} 
+            className="text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-50 transition"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
     </div>

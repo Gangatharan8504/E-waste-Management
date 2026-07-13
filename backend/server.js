@@ -11,6 +11,7 @@ const requestRoutes = require('./routes/requests');
 const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const chatRoutes = require('./routes/chat');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Base route health check
 app.get('/api/health', (req, res) => {
