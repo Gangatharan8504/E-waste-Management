@@ -23,6 +23,24 @@ router.get('/requests', protect, adminOnly, async (req, res) => {
 });
 
 /**
+ * GET /requests/:id
+ * Fetches details of a single request for the admin.
+ */
+router.get('/requests/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const request = await EwasteRequest.findById(req.params.id)
+      .populate('user', 'firstName lastName email phone');
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+    return res.status(200).json(request);
+  } catch (error) {
+    console.error('Admin Fetch Single Request Error:', error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+/**
  * PUT /requests/:id/status
  * Updates request status.
  */
