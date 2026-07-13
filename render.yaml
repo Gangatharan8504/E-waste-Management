@@ -41,7 +41,4 @@ services:
     plan: free
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: ewaste-backend
-          type: web
-          property: url
+        value: ""
