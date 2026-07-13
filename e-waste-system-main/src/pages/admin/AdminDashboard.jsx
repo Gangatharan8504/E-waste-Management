@@ -61,7 +61,7 @@ function AdminDashboard() {
       const q = search.toLowerCase();
 
       return (
-        r.id.toString().includes(q) ||
+        (r._id || r.id || "").toString().includes(q) ||
         r.deviceType?.toLowerCase().includes(q) ||
         r.brand?.toLowerCase().includes(q) ||
         r.pickupAddress?.toLowerCase().includes(q)
@@ -195,12 +195,12 @@ function AdminDashboard() {
             {filteredRequests.map(req => (
 
               <tr
-                key={req.id}
+                key={req._id || req.id}
                 className="border-t hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/admin/request/${req.id}`)}
+                onClick={() => navigate(`/admin/request/${req._id || req.id}`)}
               >
 
-                <td className="p-4">{req.id}</td>
+                <td className="p-4">{req._id || req.id}</td>
 
                 <td className="p-4">
                   {req.deviceType} - {req.brand}
