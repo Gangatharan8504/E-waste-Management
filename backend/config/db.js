@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const seedAdmin = async () => {
   try {
     const User = require('../models/User');
-    const adminExists = await User.findOne({ email: 'admin@ewaste.com' });
-    if (!adminExists) {
-      const admin = new User({
+    let admin = await User.findOne({ email: 'admin@ewaste.com' });
+    if (!admin) {
+      admin = new User({
         firstName: 'System',
         lastName: 'Admin',
         email: 'admin@ewaste.com',
@@ -19,6 +19,13 @@ const seedAdmin = async () => {
       });
       await admin.save();
       console.log('Seeded default Admin User: admin@ewaste.com / AdminPassword123');
+    } else {
+      admin.enabled = true;
+      admin.emailVerified = true;
+      admin.role = 'ADMIN';
+      admin.password = 'AdminPassword123';
+      await admin.save();
+      console.log('Synchronized default Admin User status & password reset.');
     }
   } catch (err) {
     console.error('Error seeding default Admin User:', err.message);
