@@ -1,33 +1,25 @@
-services:
-  # 1. MySQL Database (Run as Private Service in Render)
-  - type: pserv
-    name: ewaste-db
-    env: image
-    image: mysql:8.0
+databases:
+  - name: ewaste-db
+    databaseName: ewaste_db
+    user: ewaste_user
     plan: free
-    envVars:
-      - key: MYSQL_DATABASE
-        value: ewaste_db
-      - key: MYSQL_ROOT_PASSWORD
-        value: rootpassword
 
-  # 2. Spring Boot Backend Web Service
+services:
+  # 1. Spring Boot Backend Web Service
   - type: web
     name: ewaste-backend
     env: docker
     dockerfilePath: backend/Dockerfile
     plan: free
     envVars:
-      - key: DB_HOST
-        value: ewaste-db
-      - key: DB_PORT
-        value: "3306"
-      - key: DB_NAME
-        value: ewaste_db
-      - key: DB_USER
-        value: root
-      - key: DB_PASS
-        value: rootpassword
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: ewaste-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_DRIVER
+        value: org.postgresql.Driver
+      - key: SPRING_JPA_DIALECT
+        value: org.hibernate.dialect.PostgreSQLDialect
       - key: JWT_SECRET
         generateValue: true
       - key: MAIL_USERNAME
@@ -39,7 +31,7 @@ services:
       - key: ALLOWED_ORIGINS
         value: "*"
 
-  # 3. React Frontend Static Site
+  # 2. React Frontend Static Site
   - type: web
     name: ewaste-frontend
     env: static
