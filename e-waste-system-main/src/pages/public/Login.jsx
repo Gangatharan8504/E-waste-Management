@@ -27,6 +27,9 @@ function Login() {
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", user.role);
+      localStorage.setItem("firstName", user.firstName || "");
+      localStorage.setItem("lastName", user.lastName || "");
+      localStorage.setItem("profilePic", user.profilePic || "");
 
       if (user.role === "ADMIN") {
         navigate("/admin/dashboard");

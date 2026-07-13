@@ -25,6 +25,7 @@ function UserProfile() {
         headers: { "Content-Type": "multipart/form-data" }
       });
       setProfile(response.data);
+      localStorage.setItem("profilePic", response.data.profilePic || "");
       setMessage("Profile picture updated successfully!");
       window.dispatchEvent(new Event("profile-update"));
     } catch {
@@ -36,7 +37,11 @@ function UserProfile() {
     const fetchProfile = async () => {
       try {
         const response = await api.get("/auth/profile");
-        setProfile(response.data);
+        const data = response.data;
+        setProfile(data);
+        localStorage.setItem("firstName", data.firstName || "");
+        localStorage.setItem("lastName", data.lastName || "");
+        localStorage.setItem("profilePic", data.profilePic || "");
         window.dispatchEvent(new Event("profile-update"));
       } catch {
         setMessage("Failed to load profile");
@@ -60,6 +65,8 @@ function UserProfile() {
   const handleUpdate = async () => {
     try {
       await api.put("/auth/profile", profile);
+      localStorage.setItem("firstName", profile.firstName || "");
+      localStorage.setItem("lastName", profile.lastName || "");
       setEditMode(false);
       setMessage("Profile updated successfully");
       window.dispatchEvent(new Event("profile-update"));

@@ -10,7 +10,15 @@ function Navbar() {
 
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [role, setRole] = useState(localStorage.getItem("role"));
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState(() => {
+    const firstName = localStorage.getItem("firstName");
+    const lastName = localStorage.getItem("lastName");
+    const profilePic = localStorage.getItem("profilePic");
+    if (firstName || lastName) {
+      return { firstName, lastName, profilePic };
+    }
+    return null;
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -22,8 +30,12 @@ function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+    localStorage.removeItem("profilePic");
     setToken(null);
     setRole(null);
+    setProfile(null);
     navigate("/");
   };
 
@@ -44,7 +56,11 @@ function Navbar() {
       if (token) {
         try {
           const response = await api.get("/auth/profile");
-          setProfile(response.data);
+          const data = response.data;
+          setProfile(data);
+          localStorage.setItem("firstName", data.firstName || "");
+          localStorage.setItem("lastName", data.lastName || "");
+          localStorage.setItem("profilePic", data.profilePic || "");
         } catch {
           // Keep as null or ignore
         }
