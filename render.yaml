@@ -1,10 +1,19 @@
 services:
-  # 1. MySQL Database
-  - type: database
+  # 1. MySQL Database (Run as Private Service in Render)
+  - type: pserv
     name: ewaste-db
-    databaseName: ewaste_db
-    user: ewaste_user
+    env: docker
     plan: free
+    dockerImage: mysql:8.0
+    disk:
+      name: ewaste-db-data
+      mountPath: /var/lib/mysql
+      sizeGB: 1
+    envVars:
+      - key: MYSQL_DATABASE
+        value: ewaste_db
+      - key: MYSQL_ROOT_PASSWORD
+        value: rootpassword
 
   # 2. Spring Boot Backend Web Service
   - type: web
@@ -14,25 +23,15 @@ services:
     plan: free
     envVars:
       - key: DB_HOST
-        fromDatabase:
-          name: ewaste-db
-          property: host
+        value: ewaste-db
       - key: DB_PORT
-        fromDatabase:
-          name: ewaste-db
-          property: port
+        value: "3306"
       - key: DB_NAME
-        fromDatabase:
-          name: ewaste-db
-          property: database
+        value: ewaste_db
       - key: DB_USER
-        fromDatabase:
-          name: ewaste-db
-          property: user
+        value: root
       - key: DB_PASS
-        fromDatabase:
-          name: ewaste-db
-          property: password
+        value: rootpassword
       - key: JWT_SECRET
         generateValue: true
       - key: MAIL_USERNAME
