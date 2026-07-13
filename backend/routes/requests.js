@@ -35,7 +35,7 @@ const upload = multer({
  * POST /analyze-image
  * Runs AI vision analysis and estimate valuation for uploaded file.
  */
-router.post('/analyze-image', protect, upload.single('image'), async (req, res) => {
+router.post('/analyze-image', protect, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No image file uploaded' });
   }
