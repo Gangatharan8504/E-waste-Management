@@ -62,9 +62,9 @@ function AdminDashboard() {
 
       return (
         (r._id || r.id || "").toString().includes(q) ||
-        r.deviceType?.toLowerCase().includes(q) ||
-        r.brand?.toLowerCase().includes(q) ||
-        r.pickupAddress?.toLowerCase().includes(q)
+        (r.deviceType || "").toLowerCase().includes(q) ||
+        (r.brand || "").toLowerCase().includes(q) ||
+        (r.pickupAddress || "").toLowerCase().includes(q)
       );
 
     });
