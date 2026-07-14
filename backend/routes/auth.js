@@ -33,21 +33,27 @@ router.post('/register', async (req, res) => {
       phone,
       address,
       pincode,
-      enabled: false,
-      emailVerified: false
+      enabled: true,
+      emailVerified: true
     });
     await user.save();
 
-    // Generate OTP
-    const otpCode = generateOtpCode();
-    await OtpStore.deleteMany({ email }); // clear previous
-    const otp = new OtpStore({ email, otp: otpCode, purpose: 'REGISTRATION' });
-    await otp.save();
+    // Save Notifications directly
+    const n1 = new Notification({
+      user: user._id,
+      title: 'Email Verified',
+      message: 'Your email address has been successfully verified.'
+    });
+    await n1.save();
 
-    // Send email asynchronously
-    sendOtp(email, otpCode);
+    const n2 = new Notification({
+      user: user._id,
+      title: 'Welcome to EcoSync',
+      message: 'Welcome to EcoSync! We are thrilled to have you join us.'
+    });
+    await n2.save();
 
-    return res.status(201).json({ message: 'User registered successfully. Please verify email OTP.' });
+    return res.status(201).json({ message: 'User registered successfully! You can now log in.' });
   } catch (error) {
     console.error('Registration Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -161,9 +167,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // Check active
+    // Auto-enable account if verified credentials match
     if (!user.enabled) {
-      return res.status(400).json({ message: 'Account is inactive. Please verify email OTP first.' });
+      user.enabled = true;
+      user.emailVerified = true;
+      await user.save();
     }
 
     // Generate JWT
@@ -268,6 +276,70 @@ router.post('/profile-pic', protect, upload.single('file'), async (req, res) => 
     return res.status(200).json(user);
   } catch (error) {
     console.error('Profile Picture Upload Error:', error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+/**
+ * POST /forgot-password
+ * Initiates password reset by sending an OTP email.
+ */
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email.' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    await OtpStore.deleteMany({ email, purpose: 'PASSWORD_RESET' });
+    const otpRecord = new OtpStore({
+      email,
+      otp,
+      purpose: 'PASSWORD_RESET'
+    });
+    await otpRecord.save();
+
+    const { sendPasswordResetOtp } = require('../services/emailService');
+    sendPasswordResetOtp(email, otp);
+
+    return res.status(200).json({ message: 'Password reset OTP sent to your email.' });
+  } catch (error) {
+    console.error('Forgot Password Error:', error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+/**
+ * POST /reset-password
+ * Verifies OTP and resets user password.
+ */
+router.post('/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email.' });
+    }
+
+    if (otp) {
+      const record = await OtpStore.findOne({ email, otp, purpose: 'PASSWORD_RESET' });
+      if (!record) {
+        return res.status(400).json({ message: 'Invalid OTP or expired.' });
+      }
+      await OtpStore.deleteMany({ email, purpose: 'PASSWORD_RESET' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({ message: 'Password reset successful!' });
+  } catch (error) {
+    console.error('Password Reset Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 });

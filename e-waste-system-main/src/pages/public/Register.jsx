@@ -80,7 +80,8 @@ function Register() {
         pincode: form.pincode,
       });
 
-      navigate("/verify-otp", { state: { email: form.email } });
+      alert("Registration successful! You can now log in.");
+      navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed.");
     } finally {
