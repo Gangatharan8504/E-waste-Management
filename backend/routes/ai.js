@@ -12,19 +12,42 @@ router.get('/chat/history', protect, async (req, res) => {
   try {
     const rawHistory = await ChatHistory.find({ user: req.user._id }).sort({ createdAt: 1 });
     
-    // Group adjacent User messages and Bot messages into prompt/response pairs
     const formattedHistory = [];
-    for (let i = 0; i < rawHistory.length; i += 2) {
-      const userMsg = rawHistory[i];
-      const botMsg = rawHistory[i + 1];
-      if (userMsg && userMsg.sender === 'USER') {
-        formattedHistory.push({
-          id: userMsg._id,
-          prompt: userMsg.message,
-          response: botMsg ? botMsg.message : "I am processing your query..."
-        });
+    let currentPrompt = null;
+    let currentUserMsgId = null;
+
+    for (const msg of rawHistory) {
+      if (msg.sender === 'USER') {
+        if (currentPrompt !== null) {
+          formattedHistory.push({
+            id: currentUserMsgId,
+            prompt: currentPrompt,
+            response: "I am processing your query..."
+          });
+        }
+        currentPrompt = msg.message;
+        currentUserMsgId = msg._id;
+      } else if (msg.sender === 'BOT') {
+        if (currentPrompt !== null) {
+          formattedHistory.push({
+            id: currentUserMsgId,
+            prompt: currentPrompt,
+            response: msg.message
+          });
+          currentPrompt = null;
+          currentUserMsgId = null;
+        }
       }
     }
+    
+    if (currentPrompt !== null) {
+      formattedHistory.push({
+        id: currentUserMsgId,
+        prompt: currentPrompt,
+        response: "I am processing your query..."
+      });
+    }
+
     return res.status(200).json(formattedHistory);
   } catch (error) {
     console.error('Fetch Chat History Error:', error.message);

@@ -230,8 +230,19 @@ const chatWithEcoBot = async (message, chatHistory = []) => {
   const groq = getGroqClient();
   const lowerMsg = message.toLowerCase();
 
-  // Helper validation matching keywords
+  // Helper validation matching keywords & greetings
+  const isGreeting = 
+    lowerMsg.trim() === 'hi' ||
+    lowerMsg.trim() === 'hello' ||
+    lowerMsg.trim() === 'hey' ||
+    lowerMsg.includes('greetings') ||
+    lowerMsg.includes('how are you') ||
+    lowerMsg.includes('who are you') ||
+    lowerMsg.includes('your name') ||
+    lowerMsg.includes('help');
+
   const isEwasteTopic = 
+    isGreeting ||
     lowerMsg.includes('waste') ||
     lowerMsg.includes('recycle') ||
     lowerMsg.includes('electronic') ||
