@@ -15,7 +15,19 @@ router.get('/requests', protect, adminOnly, async (req, res) => {
     const requests = await EwasteRequest.find()
       .populate('user', 'firstName lastName email phone')
       .sort({ createdAt: -1 });
-    return res.status(200).json(requests);
+
+    const mapped = requests.map(r => {
+      const obj = r.toObject();
+      obj.id = obj._id.toString();
+      if (obj.user) {
+        obj.userName = `${obj.user.firstName} ${obj.user.lastName}`;
+        obj.userEmail = obj.user.email;
+        obj.userPhone = obj.user.phone;
+      }
+      return obj;
+    });
+
+    return res.status(200).json(mapped);
   } catch (error) {
     console.error('Admin Fetch Requests Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -33,7 +45,16 @@ router.get('/requests/:id', protect, adminOnly, async (req, res) => {
     if (!request) {
       return res.status(404).json({ message: 'Request not found' });
     }
-    return res.status(200).json(request);
+
+    const obj = request.toObject();
+    obj.id = obj._id.toString();
+    if (obj.user) {
+      obj.userName = `${obj.user.firstName} ${obj.user.lastName}`;
+      obj.userEmail = obj.user.email;
+      obj.userPhone = obj.user.phone;
+    }
+
+    return res.status(200).json(obj);
   } catch (error) {
     console.error('Admin Fetch Single Request Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
