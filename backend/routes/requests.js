@@ -195,7 +195,12 @@ router.post('/', protect, async (req, res) => {
 router.get('/my', protect, async (req, res) => {
   try {
     const requests = await EwasteRequest.find({ user: req.user._id }).sort({ createdAt: -1 });
-    return res.status(200).json(requests);
+    const mapped = requests.map(r => {
+      const obj = r.toObject();
+      obj.id = obj._id.toString();
+      return obj;
+    });
+    return res.status(200).json(mapped);
   } catch (error) {
     console.error('Fetch User Requests Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -218,7 +223,15 @@ router.get('/:id', protect, async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    return res.status(200).json(request);
+    const obj = request.toObject();
+    obj.id = obj._id.toString();
+    if (obj.user) {
+      obj.userName = `${obj.user.firstName} ${obj.user.lastName}`;
+      obj.userEmail = obj.user.email;
+      obj.userPhone = obj.user.phone;
+    }
+
+    return res.status(200).json(obj);
   } catch (error) {
     console.error('Fetch Single Request Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
