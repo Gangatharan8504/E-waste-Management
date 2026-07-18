@@ -34,7 +34,7 @@ const seedAdmin = async () => {
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ewaste_db');
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://carrier-pilot:admin123@cluster0.kkdvuh4.mongodb.net/ewaste_db');
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     await seedAdmin();
   } catch (error) {

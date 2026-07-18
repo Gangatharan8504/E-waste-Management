@@ -9,15 +9,13 @@ services:
     startCommand: npm start
     envVars:
       - key: MONGODB_URI
-        value: ""
+        value: "mongodb+srv://carrier-pilot:admin123@cluster0.kkdvuh4.mongodb.net/ewaste_db"
       - key: JWT_SECRET
         generateValue: true
       - key: MAIL_USERNAME
         value: gangatharan949@gmail.com
       - key: MAIL_PASSWORD
-        value: oqpwimlnwrllkscn
-      - key: GROQ_API_KEY
-        value: ""
+        value: indb pgtm brux izqh
       - key: ALLOWED_ORIGINS
         value: "*"
 
