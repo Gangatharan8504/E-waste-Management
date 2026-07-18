@@ -21,26 +21,6 @@ const EwasteRequestSchema = new mongoose.Schema({
   scheduledTime: { type: String },
   adminNotes: { type: String },
   
-  // AI Image Verification details
-  isElectronicDevice: { type: Boolean },
-  isSuitableForRecycling: { type: Boolean },
-  aiDamageLevel: { type: String },
-  aiConfidenceScore: { type: Number },
-  aiSafetyRisks: { type: String },
-  aiRepairRecommendation: { type: String },
-  aiReuseRecommendation: { type: String },
-  aiRecyclingRecommendation: { type: String },
-  aiSafeHandlingInstructions: { type: String },
-  rejectedReason: { type: String },
-  aiSummary: { type: String },
-
-  // AI Valuation details
-  estimatedValue: { type: Number },
-  recoverableMaterials: [{ type: String }],
-  recyclablePercentage: { type: Number },
-  environmentalImpact: { type: String },
-  valuationReason: { type: String },
-
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

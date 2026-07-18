@@ -37,8 +37,13 @@ function Login() {
         navigate("/user/dashboard");
       }
 
-    } catch {
-      setError("Invalid credentials or email not verified.");
+    } catch (err) {
+      if (err.response?.status === 403 && err.response?.data?.redirectEmail) {
+        alert("Your account is not verified. Redirecting you to OTP verification...");
+        navigate("/verify-otp", { state: { email: err.response.data.redirectEmail } });
+      } else {
+        setError(err.response?.data?.message || "Invalid credentials or email not verified.");
+      }
     } finally {
       setLoading(false);
     }

@@ -23,7 +23,7 @@ services:
 
   # 2. React Frontend Static Site
   - type: web
-    name: ewaste-frontend
+    name: E-waste Management System
     env: static
     rootDir: e-waste-system-main
     buildCommand: npm install && npm run build

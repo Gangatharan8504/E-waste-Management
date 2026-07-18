@@ -15,12 +15,9 @@ import ChangePassword from "./pages/user/ChangePassword";
 import CreatePickup from "./pages/user/CreatePickup";
 import MyRequests from "./pages/user/MyRequests";
 import NotificationPage from "./pages/user/NotificationPage";
-import ValueEstimatorPage from "./pages/user/ValueEstimatorPage";
-
 // Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRequestDetails from "./pages/admin/AdminRequestDetails";
-import AdminInsights from "./pages/admin/AdminInsights";
 
 import ProtectedRoute from "./utils/ProtectedRoute";
 import Navbar from "./components/Navbar";
@@ -97,14 +94,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/user/value-estimator"
-          element={
-            <ProtectedRoute>
-              <ValueEstimatorPage />
-            </ProtectedRoute>
-          }
-        />
+
 
         {/* ================= ADMIN ROUTES ================= */}
 
@@ -136,14 +126,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/admin/insights"
-          element={
-            <ProtectedRoute requiredRole="ADMIN">
-              <AdminInsights />
-            </ProtectedRoute>
-          }
-        />
+
 
         {/* Catch-all unmatched routes redirect to landing/home */}
         <Route path="*" element={<Navigate to="/" replace />} />

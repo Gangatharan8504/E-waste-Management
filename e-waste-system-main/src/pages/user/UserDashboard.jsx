@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import EcoBot from "../../components/EcoBot";
 
 function UserDashboard() {
 
@@ -153,9 +152,6 @@ function UserDashboard() {
       <div className="bg-white border-t py-6 text-center text-sm text-gray-500">
         Together we can reduce electronic waste and build a sustainable future.
       </div>
-
-      <EcoBot />
-
     </div>
   );
 }

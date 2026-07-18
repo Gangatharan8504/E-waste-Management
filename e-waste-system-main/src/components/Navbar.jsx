@@ -122,12 +122,6 @@ function Navbar() {
                 <ClipboardList size={16} /> My Requests
               </Link>
 
-              <Link
-                to="/user/value-estimator"
-                className={`flex items-center gap-2 ${isActive("/user/value-estimator")}`}
-              >
-                <DollarSign size={16} /> Value Estimator
-              </Link>
             </>
           )}
 
@@ -138,12 +132,6 @@ function Navbar() {
                 className={`mr-4 ${isActive("/admin/dashboard")}`}
               >
                 Manage Requests
-              </Link>
-              <Link
-                to="/admin/insights"
-                className={`flex items-center gap-1 ${isActive("/admin/insights")}`}
-              >
-                <Sparkles size={16} /> AI Insights
               </Link>
             </>
           )}
@@ -241,12 +229,6 @@ function Navbar() {
             >
               <ClipboardList size={18} /> My Requests
             </Link>
-            <Link
-              to="/user/value-estimator"
-              className={`flex items-center gap-3 py-2 border-b border-gray-50 text-sm font-semibold ${isActive("/user/value-estimator")}`}
-            >
-              <DollarSign size={18} /> Value Estimator
-            </Link>
           </>
         )}
         {role === "ADMIN" && (
@@ -256,12 +238,6 @@ function Navbar() {
               className={`flex items-center gap-3 py-2 border-b border-gray-50 text-sm font-semibold ${isActive("/admin/dashboard")}`}
             >
               <ClipboardList size={18} /> Manage Requests
-            </Link>
-            <Link
-              to="/admin/insights"
-              className={`flex items-center gap-3 py-2 border-b border-gray-50 text-sm font-semibold ${isActive("/admin/insights")}`}
-            >
-              <Sparkles size={18} /> AI Insights
             </Link>
           </>
         )}

@@ -212,37 +212,7 @@ function AdminRequestDetails() {
 
       </div>
 
-      {request.isElectronicDevice !== null && request.isElectronicDevice !== undefined && (
-        <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl mb-6 text-left">
-          <h2 className="text-xl font-semibold mb-4 text-emerald-800 border-b pb-2 border-emerald-200/50">
-            AI Photo Analysis Report
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-            <div>
-              <p className="mb-1"><strong className="text-gray-900">Device Type:</strong> {request.aiDeviceType || request.deviceType}</p>
-              <p className="mb-1"><strong className="text-gray-900">Category:</strong> {request.aiDeviceCategory || "N/A"}</p>
-              <p className="mb-1"><strong className="text-gray-900">Estimated Condition:</strong> {request.aiEstimatedCondition || request.condition}</p>
-              <p className="mb-1"><strong className="text-gray-900">Confidence Score:</strong> {request.aiConfidenceScore ? `${request.aiConfidenceScore}%` : "N/A"}</p>
-            </div>
-            <div>
-              <p className="mb-1"><strong className="text-gray-900">Damage Level:</strong> <span className="font-semibold text-red-700">{request.aiDamageLevel || "N/A"}</span></p>
-              <p className="mb-1"><strong className="text-gray-900">Battery status:</strong> {request.aiBatteryDamage || "N/A"}</p>
-              <p className="mb-1"><strong className="text-gray-900">Safety risks:</strong> {request.aiSafetyRisks || "N/A"}</p>
-              <p className="mb-1"><strong className="text-gray-900">Visible parts:</strong> {request.aiVisibleParts || "N/A"}</p>
-            </div>
-            <div className="md:col-span-2 border-t pt-3 border-emerald-200/50 space-y-2 mt-2">
-              <p><strong className="text-gray-900">Safe Handling Instructions:</strong> {request.aiSafeHandlingInstructions || "N/A"}</p>
-              <p><strong className="text-gray-900">AI Summary:</strong> {request.aiSummary || "N/A"}</p>
-              <p><strong className="text-gray-900">AI Recommendations:</strong></p>
-              <ul className="list-disc ml-5 space-y-0.5 text-xs text-gray-600">
-                <li><strong>Repair:</strong> {request.aiRepairRecommendation || "N/A"}</li>
-                <li><strong>Reuse:</strong> {request.aiReuseRecommendation || "N/A"}</li>
-                <li><strong>Recycle:</strong> {request.aiRecyclingRecommendation || "N/A"}</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* ACTIONS */}
 

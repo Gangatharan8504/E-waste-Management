@@ -33,32 +33,28 @@ router.post('/register', async (req, res) => {
       phone,
       address,
       pincode,
-      enabled: true,
-      emailVerified: true
+      enabled: false,
+      emailVerified: false
     });
     await user.save();
 
-    // Save Notifications directly
-    const n1 = new Notification({
-      user: user._id,
-      title: 'Email Verified',
-      message: 'Your email address has been successfully verified.'
+    const otpCode = generateOtpCode();
+    const otpRecord = new OtpStore({
+      email,
+      otp: otpCode,
+      purpose: 'REGISTRATION'
     });
-    await n1.save();
+    await otpRecord.save();
 
-    const n2 = new Notification({
-      user: user._id,
-      title: 'Welcome to EcoSync',
-      message: 'Welcome to EcoSync! We are thrilled to have you join us.'
-    });
-    await n2.save();
+    await sendOtp(email, otpCode, firstName);
 
-    return res.status(201).json({ message: 'User registered successfully! You can now log in.' });
+    return res.status(201).json({ message: 'Registration successful! Verification OTP sent to your email.' });
   } catch (error) {
     console.error('Registration Error:', error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 /**
  * VERIFY OTP
@@ -167,11 +163,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // Auto-enable account if verified credentials match
-    if (!user.enabled) {
-      user.enabled = true;
-      user.emailVerified = true;
-      await user.save();
+    // Block login if user has not completed OTP verification
+    if (!user.enabled || !user.emailVerified) {
+      return res.status(403).json({
+        message: 'Account is not verified. Please verify your email first.',
+        redirectEmail: user.email
+      });
     }
 
     // Generate JWT
@@ -304,7 +301,7 @@ router.post('/forgot-password', async (req, res) => {
     await otpRecord.save();
 
     const { sendPasswordResetOtp } = require('../services/emailService');
-    sendPasswordResetOtp(email, otp);
+    await sendPasswordResetOtp(email, otp, user.firstName);
 
     return res.status(200).json({ message: 'Password reset OTP sent to your email.' });
   } catch (error) {

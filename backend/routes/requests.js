@@ -6,7 +6,7 @@ const fs = require('fs');
 const EwasteRequest = require('../models/EwasteRequest');
 const Notification = require('../models/Notification');
 const { protect } = require('../middleware/auth');
-const { analyzeDeviceImage, estimateRecyclingValue } = require('../services/aiService');
+const { sendPickupSubmitted } = require('../services/emailService');
 const { uploadImage } = require('../services/cloudinaryService');
 
 // Multer Storage Setup
@@ -32,154 +32,54 @@ const upload = multer({
 });
 
 /**
- * POST /analyze-image
- * Runs AI vision analysis and estimate valuation for uploaded file.
- */
-router.post('/analyze-image', protect, upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No image file uploaded' });
-  }
-
-  const deviceHint = req.body.deviceHint || 'Electronic Device';
-  const filePath = req.file.path;
-
-  try {
-    // 1. Analyze device photo
-    const analysis = await analyzeDeviceImage(filePath, deviceHint);
-
-    // 2. Upload to Cloudinary (falls back to local file name if Cloudinary keys missing)
-    const storageUrl = await uploadImage(req.file);
-
-    // 3. Estimate valuation details if device is electronic
-    let valuation = {
-      estimatedValue: 0,
-      recoverableMaterials: [],
-      recyclablePercentage: 0,
-      environmentalImpact: "",
-      valuationReason: ""
-    };
-
-    if (analysis.isElectronicDevice) {
-      valuation = await estimateRecyclingValue(
-        analysis.deviceType || deviceHint, 
-        analysis.aiDamageLevel || 'Moderate'
-      );
-    }
-
-    // Prepare combined report
-    const responsePayload = {
-      imageUrl: storageUrl,
-      isElectronicDevice: analysis.isElectronicDevice,
-      isSuitableForRecycling: analysis.isSuitableForRecycling,
-      deviceType: analysis.deviceType || deviceHint,
-      deviceCategory: analysis.deviceCategory || 'Consumer Electronics',
-      estimatedCondition: analysis.estimatedCondition || 'Poor',
-      isDamaged: analysis.isDamaged !== false,
-      damageLevel: analysis.damageLevel || analysis.aiDamageLevel || 'Severe',
-      aiDamageLevel: analysis.aiDamageLevel || analysis.damageLevel || 'Severe',
-      confidenceScore: analysis.confidenceScore || analysis.aiConfidenceScore || 95,
-      aiConfidenceScore: analysis.aiConfidenceScore || analysis.confidenceScore || 95,
-      batteryDamage: analysis.batteryDamage || 'No obvious battery hazards detected',
-      safetyRisks: analysis.safetyRisks || analysis.aiSafetyRisks || '',
-      aiSafetyRisks: analysis.aiSafetyRisks || analysis.safetyRisks || '',
-      visibleParts: analysis.visibleParts || 'Casing, logic board connectors',
-      repairRecommendation: analysis.repairRecommendation || analysis.aiRepairRecommendation || '',
-      aiRepairRecommendation: analysis.aiRepairRecommendation || analysis.repairRecommendation || '',
-      reuseRecommendation: analysis.reuseRecommendation || analysis.aiReuseRecommendation || '',
-      aiReuseRecommendation: analysis.aiReuseRecommendation || analysis.reuseRecommendation || '',
-      recyclingRecommendation: analysis.recyclingRecommendation || analysis.aiRecyclingRecommendation || '',
-      aiRecyclingRecommendation: analysis.aiRecyclingRecommendation || analysis.recyclingRecommendation || '',
-      safeHandlingInstructions: analysis.safeHandlingInstructions || analysis.aiSafeHandlingInstructions || '',
-      aiSafeHandlingInstructions: analysis.aiSafeHandlingInstructions || analysis.safeHandlingInstructions || '',
-      aiSummary: analysis.aiSummary || '',
-      rejectedReason: analysis.rejectedReason || '',
-      estimatedValue: valuation.estimatedValue,
-      recoverableMaterials: valuation.recoverableMaterials,
-      recyclablePercentage: valuation.recyclablePercentage,
-      environmentalImpact: valuation.environmentalImpact,
-      valuationReason: valuation.valuationReason
-    };
-
-    return res.status(200).json(responsePayload);
-  } catch (error) {
-    console.error('Image Analysis Error:', error.message);
-    return res.status(500).json({ message: 'Failed to complete AI verification analysis' });
-  }
-});
-
-/**
  * POST /
  * Submits a new pickup request.
  */
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, upload.array('images', 5), async (req, res) => {
   const {
     deviceType, brand, model, condition, quantity, pickupAddress,
-    pickupLat, pickupLng, remarks, imageUrls,
-    isElectronicDevice, isSuitableForRecycling, aiDamageLevel,
-    aiConfidenceScore, aiSafetyRisks, aiRepairRecommendation,
-    aiReuseRecommendation, aiRecyclingRecommendation,
-    aiSafeHandlingInstructions, aiSummary, rejectedReason,
-    estimatedValue, recoverableMaterials, recyclablePercentage,
-    environmentalImpact, valuationReason
+    pickupLat, pickupLng, remarks
   } = req.body;
 
-  // Strict check constraint: submit disabled if AI rejects device suitability
-  if (isElectronicDevice === false) {
-    return res.status(400).json({ 
-      message: 'Cannot submit pickup request: AI analysis determined the uploaded item is not a valid electronic device.' 
-    });
-  }
-
   try {
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const url = await uploadImage(file);
+        if (url) imageUrls.push(url);
+      }
+    }
+
+    const qty = parseInt(quantity) || 1;
+
     const pickupRequest = new EwasteRequest({
       user: req.user._id,
       deviceType,
       brand,
       model,
       condition,
-      quantity: quantity || 1,
+      quantity: qty,
       pickupAddress,
-      pickupLat,
-      pickupLng,
+      pickupLat: pickupLat ? parseFloat(pickupLat) : undefined,
+      pickupLng: pickupLng ? parseFloat(pickupLng) : undefined,
       remarks,
-      imageUrls: imageUrls || [],
-      status: 'PENDING',
-      isElectronicDevice,
-      isSuitableForRecycling,
-      aiDamageLevel,
-      aiConfidenceScore,
-      aiSafetyRisks,
-      aiRepairRecommendation,
-      aiReuseRecommendation,
-      aiRecyclingRecommendation,
-      aiSafeHandlingInstructions,
-      aiSummary,
-      rejectedReason,
-      estimatedValue,
-      recoverableMaterials,
-      recyclablePercentage,
-      environmentalImpact,
-      valuationReason
+      imageUrls,
+      status: 'PENDING'
     });
 
     await pickupRequest.save();
 
     // Generate Notifications
-    const n1 = new Notification({
-      user: req.user._id,
-      title: 'AI Analysis Completed',
-      message: `AI has successfully analyzed the device photos for your request #${pickupRequest._id}.`,
-      requestId: pickupRequest._id
-    });
-    await n1.save();
-
-    const n2 = new Notification({
+    const n = new Notification({
       user: req.user._id,
       title: 'Pickup Request Submitted',
-      message: `Your pickup request for the ${brand} ${deviceType} was successfully submitted.`,
+      message: `Your pickup request for the ${brand || ''} ${deviceType || ''} was successfully submitted.`,
       requestId: pickupRequest._id
     });
-    await n2.save();
+    await n.save();
+
+    // Send confirmation email
+    await sendPickupSubmitted(req.user.email, deviceType, qty, pickupAddress, req.user.firstName);
 
     return res.status(201).json(pickupRequest);
   } catch (error) {
