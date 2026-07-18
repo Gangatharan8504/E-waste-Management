@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.DEV ? "http://localhost:8081/api" : "https://ewaste-backend-4jyx.onrender.com/api");
+  (import.meta.env.DEV ? "http://localhost:8081/api" : "https://e-waste-backend-ruby.vercel.app/api");
 
 const api = axios.create({
   baseURL: API_BASE_URL,
