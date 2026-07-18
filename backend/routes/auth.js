@@ -22,7 +22,13 @@ router.post('/register', async (req, res) => {
   try {
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+      if (!userExists.emailVerified || !userExists.enabled) {
+        // If the account exists but was never verified, delete it to allow fresh registration
+        await User.deleteOne({ _id: userExists._id });
+        await OtpStore.deleteMany({ email });
+      } else {
+        return res.status(400).json({ message: 'User with this email already exists' });
+      }
     }
 
     const user = new User({
