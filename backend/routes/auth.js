@@ -240,8 +240,8 @@ const multer = require('multer');
 const fs = require('fs');
 const { uploadImage } = require('../services/cloudinaryService');
 
-const uploadsFolder = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsFolder)) {
+const uploadsFolder = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../uploads');
+if (!process.env.VERCEL && !fs.existsSync(uploadsFolder)) {
   fs.mkdirSync(uploadsFolder, { recursive: true });
 }
 

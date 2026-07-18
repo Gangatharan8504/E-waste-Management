@@ -10,8 +10,8 @@ const { sendPickupSubmitted } = require('../services/emailService');
 const { uploadImage } = require('../services/cloudinaryService');
 
 // Multer Storage Setup
-const uploadsFolder = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsFolder)) {
+const uploadsFolder = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../uploads');
+if (!process.env.VERCEL && !fs.existsSync(uploadsFolder)) {
   fs.mkdirSync(uploadsFolder, { recursive: true });
 }
 

@@ -23,8 +23,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve file uploads statically
 // Expose both /uploads and /api/files to match frontend getFileUrl endpoints
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
+const uploadsDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, 'uploads');
+if (!process.env.VERCEL && !fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static(uploadsDir));
