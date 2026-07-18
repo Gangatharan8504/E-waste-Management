@@ -18,6 +18,12 @@ services:
         value: indb pgtm brux izqh
       - key: ALLOWED_ORIGINS
         value: "*"
+      - key: CLOUDINARY_CLOUD_NAME
+        value: e-waste
+      - key: CLOUDINARY_API_KEY
+        value: "561495598558553"
+      - key: CLOUDINARY_API_SECRET
+        value: Iy-g8HpQftsynDoPsjVsE8mpyVY
 
   # 2. React Frontend Static Site
   - type: web
