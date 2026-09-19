@@ -14,14 +14,21 @@ function NotificationBell() {
   const navigate = useNavigate();
 
   const fetchNotifications = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
       const res = await api.get("/notifications");
-      const data = res.data;
+      const data = Array.isArray(res.data) ? res.data : (res.data?.notifications || []);
       setNotifications(data);
+
+      // Compute unread count directly from payload
+      const unread = data.filter((n) => !n.isRead).length;
+      setUnreadCount(unread);
 
       // Detect any new unread notifications that were not present before
       if (lastNotifIdsRef.current.size > 0) {
-        const newUnread = data.filter(n => !n.isRead && !lastNotifIdsRef.current.has(n.id));
+        const newUnread = data.filter((n) => !n.isRead && !lastNotifIdsRef.current.has(n.id));
         if (newUnread.length > 0) {
           const latest = newUnread[0];
           setActiveToast({
@@ -29,7 +36,6 @@ function NotificationBell() {
             description: latest.description,
             id: latest.id
           });
-          // Auto dismiss after 4 seconds
           setTimeout(() => {
             setActiveToast(null);
           }, 4000);
@@ -37,23 +43,23 @@ function NotificationBell() {
       }
 
       // Sync notification IDs history
-      const currentIds = new Set(data.map(n => n.id));
+      const currentIds = new Set(data.map((n) => n.id));
       lastNotifIdsRef.current = currentIds;
-
-      const countRes = await api.get("/notifications/unread-count");
-      setUnreadCount(countRes.data);
-    } catch (err) {
-      console.error("Failed to load notifications:", err);
+    } catch {
+      // Gracefully ignore transient background poll errors
     }
   };
 
   useEffect(() => {
     fetchNotifications();
 
-    // Poll for notifications in the background every 10 seconds for real-time updates
-    const interval = setInterval(fetchNotifications, 10000);
+    // Poll gracefully every 30 seconds when window is active
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchNotifications();
+      }
+    }, 30000);
 
-    // Event listener for click outside to close dropdown
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsOpen(false);
